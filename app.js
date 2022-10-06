@@ -1,3 +1,4 @@
+import { EntityRect, EntityArc } from './Entity.js';
 let stage = new createjs.Stage('canvas1');
 let fps = new createjs.Text("none", "12px Arial", "#0000ff");
 
@@ -49,6 +50,8 @@ class Bird {
     }          
 }
 
+let t1, t2 = null;
+
 //key event
 window.addEventListener('keydown', (e) => {
     if (e.code === 'Space') spacePressed = true;
@@ -59,7 +62,6 @@ window.addEventListener('keyup', (e) => {
     if (e.code === 'Space') spacePressed = false;
 });
 
-
 const bird = new Bird(stage.canvas.width / 2, 5, 10, 10);
 //const bird2 = new Bird(stage.canvas.width - 100, 5, 10, 10);
 
@@ -68,10 +70,9 @@ function init() {
     fps.setTransform(10, 10, 1, 1);
     stage.addChild(fps);
 
-
-
+    t1 = EntityRect({x:450, y:40, w:35, stage: stage, debug: false});
+    t2 = EntityArc({name:undefined, x:350, y:40, r:25, stage: stage})
 }
-
 
 //ticker
 createjs.Ticker.addEventListener("tick", handlerTick);
@@ -82,10 +83,12 @@ function handlerTick(event) {
 
         bird.update();
         bird.draw(stage);
-       
 
+        //
+        t1.Draw();
+        t1.Update();
+        t2.Draw();
 
-        
         stage.update();
     }
 }
