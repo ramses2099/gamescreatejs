@@ -1,90 +1,91 @@
 let stage = new createjs.Stage('canvas1');
-let fps = new createjs.Text("none", "20px Arial", "#ffffff");
+let fps = new createjs.Text("none", "12px Arial", "#0000ff");
 
-//using LoadQueue load images
-let queue = new createjs.LoadQueue();
-queue.addEventListener("complete", onComple);
-queue.loadManifest([
-    { id: 'butterfly', src: './images/butterfly001.png' }
-]);
-function onComple() {
-    console.log('all files loaded');
+const CANVA_HEIGHT = (stage.canvas.height / 2);
+const CANVA_WITDH = (stage.canvas.width / 2);
+
+let spacePressed = false;
+
+class Bird {
+    constructor(x, y, w, h) {
+        this.rect = new createjs.Rectangle(x, y, w, h);
+        this.graphics = new createjs.Graphics();
+        this.graphics.setStrokeStyle(1);
+        this.graphics.beginStroke('#FFFFFF');
+        this.graphics.beginFill('#FF0000');
+        this.graphics.drawRect(this.rect.x, this.rect.y, this.rect.width, this.rect.height);
+        //velocity
+        this.vy = 0;
+        this.weight = 1;
+
+        this.shape = new createjs.Shape(this.graphics);
+    }
+    //   
+    update() {
+        if (this.shape.y > stage.canvas.height - (this.rect.height * 3)) {
+            this.shape.y = stage.canvas.height - (this.rect.height * 3);
+            this.rect.y = stage.canvas.height - this.rect.height;
+            this.vy = 0;
+        } else {
+            this.vy += this.weight;
+            this.rect.y += this.vy;
+            this.shape.y += this.vy;
+        }
+        //
+        if(this.y < 0 + this.height){
+            this.y = 0 + this.height;
+            this.vy = 0;
+        }
+        //        
+        if(spacePressed)this.flap();
+    }
+    //
+    draw(stage) {
+        stage.addChild(this.shape);
+    }    
+    //
+    flap() {
+       this.vy -= 2;       
+    }          
 }
 
-let square = null;
-let circle = null;
-let direction = 1;
-let speed = 0.50;
+//key event
+window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') spacePressed = true;
+});
+
+//key event
+window.addEventListener('keyup', (e) => {
+    if (e.code === 'Space') spacePressed = false;
+});
+
+
+const bird = new Bird(stage.canvas.width / 2, 5, 10, 10);
+//const bird2 = new Bird(stage.canvas.width - 100, 5, 10, 10);
 
 function init() {
+    //add fps
     fps.setTransform(10, 10, 1, 1);
     stage.addChild(fps);
 
-    // objects
-    let g = new createjs.Graphics();
-    g.beginStroke('#FFFFFF');
-    g.beginFill('#FF0000');
-    g.drawRect(0,0,50,50);
-        
-    square = new createjs.Shape(g);
-    square.x = square.y = 100;
-    stage.addChild(square);
-    // objects
-
-    // objects
-    let rect = new createjs.Shape();
-    rect.graphics.beginStroke('#FFFFFF');
-    rect.graphics.beginFill('#00FF00');
-    rect.graphics.drawRect(0,0,50,50);
-    rect.x = 60;
-    rect.y = 100;
-    stage.addChild(rect);
-    createjs.Tween.get(rect).to({rotation:360},3000);
-    // objects
 
 
-    circle = new createjs.Shape();
-    circle.graphics.beginStroke('#FFFFFF');
-    circle.graphics.beginFill('#FFF000');
-    circle.graphics.drawCircle(0,0,20);
-    circle.x = 300;
-    circle.y = 300;
-    stage.addChild(circle);
-
-    
-}
-//
-function updateCircle(){
-    let nextX = circle.x + (speed * direction);
-    if(nextX > stage.canvas.width - circle.radius){
-        nextX = stage.canvas.width - circle.radius
-        direction *= -1;
-    }else if(nextX < circle.radius){
-        nextX = circle.radius;
-        direction *= -1;
-    }
-    circle.nextX = nextX;
-}
-//
-function renderCircle(){
-    circle.x = circle.nextX;
 }
 
 
-
-//
+//ticker
 createjs.Ticker.addEventListener("tick", handlerTick);
 function handlerTick(event) {
     if (!event.paused) {
         //fps
         fps.text = `FPS:${event.delta.toFixed(2)}`;
 
-        updateCircle();
-        renderCircle();
+        bird.update();
+        bird.draw(stage);
+       
 
-        //
-        square.y += 0.5;
 
+        
         stage.update();
     }
 }
